@@ -17,6 +17,7 @@
 var attractionModule = (function () {
 
   // jQuery selections
+ 
 
   var $itinerary, $hotel, $restaurants, $activities;
   $(function(){

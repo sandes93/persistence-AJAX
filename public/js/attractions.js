@@ -8,44 +8,57 @@
  */
 
 var attractionsModule = (function () {
+  var options = {};
+  var restaurantsdb = $.get('/api/restaurants');
+  var hotelsdb = $.get('/api/hotels');
+  var activitiesdb = $.get('/api/activities');
 
-  // application state
+  Promise.all([restaurantsdb, hotelsdb, activitiesdb])
+  .then(function(values){
+    
+    options.restaurants = values[0];
+    options.hotels = values[1];
+    options.activities = values[2]; 
 
-  var enhanced = {
-    hotels: hotels.map(attractionModule.create),
-    restaurants: restaurants.map(attractionModule.create),
-    activities: activities.map(attractionModule.create),
-  }
+    // application state
 
-  // private helper methods (only available inside the module)
-
-  function findById (array, id) {
-    return array.find(function (el) {
-      return +el.id === +id;
-    });
-  }
-
-  // globally accessible module methods (available to other modules)
-
-  var publicAPI = {
-
-    getByTypeAndId: function (type, id) {
-      if (type === 'hotel') return findById(enhanced.hotels, id);
-      else if (type === 'restaurant') return findById(enhanced.restaurants, id);
-      else if (type === 'activity') return findById(enhanced.activities, id);
-      else throw Error('Unknown attraction type');
-    },
-
-    getEnhanced: function (databaseAttraction) {
-      var type = databaseAttraction.type;
-      var id = databaseAttraction.id;
-      var found = publicAPI.getByTypeAndId(type, id);
-      if (found) return found;
-      throw Error('enhanced version not found', databaseAttraction);
+    var enhanced = {
+      hotels: options.hotels.map(attractionModule.create),
+      restaurants: options.restaurants.map(attractionModule.create),
+      activities: options.activities.map(attractionModule.create),
     }
 
-  };
+    // private helper methods (only available inside the module)
 
-  return publicAPI;
+    function findById (array, id) {
+      return array.find(function (el) {
+        return +el.id === +id;
+      });
+    }
+
+    // globally accessible module methods (available to other modules)
+
+    var publicAPI = {
+
+      getByTypeAndId: function (type, id) {
+        if (type === 'hotel') return findById(enhanced.hotels, id);
+        else if (type === 'restaurant') return findById(enhanced.restaurants, id);
+        else if (type === 'activity') return findById(enhanced.activities, id);
+        else throw Error('Unknown attraction type');
+      },
+
+      getEnhanced: function (databaseAttraction) {
+        var type = databaseAttraction.type;
+        var id = databaseAttraction.id;
+        var found = publicAPI.getByTypeAndId(type, id);
+        if (found) return found;
+        throw Error('enhanced version not found', databaseAttraction);
+      }
+
+    };
+
+    return publicAPI;
+
+  })
 
 }());
